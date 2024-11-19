@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<h1>Christmas Secret Santa</h1>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin the Wheel</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            margin: 0;
+            height: 100vh;
+            justify-content: center;
+        }
+        canvas {
+            border: 2px solid #333;
+            border-radius: 50%;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: grey;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="wheel" width="400" height="400"></canvas>
+    <button id="spinButton">Spin the Wheel</button>
+    <script>
+        const canvas = document.getElementById('wheel');
+        const ctx = canvas.getContext('2d');
+        const spinButton = document.getElementById('spinButton');
+        const names = [
+            'Alice', 'Nadeen', 'Robyn', 'Niall', 'Jackie',
+            'Niamh', 'Chloe', 'Natalija', 'John', 'Claire',
+            'Siobhan', 'Lucy', 'Mia', 'Caoimhe', 'Nuala',
+            'Mandy', 'Lee'
+        ];
+        let remainingNames = [...names];
+        const colors = ['#FF5733', '#33FF57', '#3357FF', '#F4C724', '#A632FF', 
+                        '#FF2387', '#23FFD9', '#FFE123', '#B1FF33', '#FF5733', 
+                        '#33FF57', '#3357FF', '#F4C724', '#A632FF', '#FF2387', 
+                        '#23FFD9', '#FFE123'];
+
+        function drawWheel() {
+            const slices = remainingNames.length;
+            const sliceAngle = (2 * Math.PI) / slices;
+
+            remainingNames.forEach((name, i) => {
+                const startAngle = i * sliceAngle;
+                const endAngle = startAngle + sliceAngle;
+
+                ctx.beginPath();
+                ctx.moveTo(200, 200); // center of the canvas
+                ctx.arc(200, 200, 200, startAngle, endAngle);
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.stroke();
+                ctx.closePath();
+
+                ctx.save();
+                ctx.translate(200, 200);
+                ctx.rotate(startAngle + sliceAngle / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#000';
+                ctx.font = '16px Arial';
+                ctx.fillText(name, 180, 5);
+                ctx.restore();
+            });
+        }
+
+        function spinWheel() {
+            let rotation = 0;
+            const totalRotations = Math.random() * 4 + 4; // Random rotations
+            const spinSpeed = 10; // Speed of the spin
+            let currentName = '';
+
+            const spin = setInterval(() => {
+                rotation += spinSpeed;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                ctx.translate(200, 200);
+                ctx.rotate(rotation * Math.PI / 180);
+                ctx.translate(-200, -200);
+                drawWheel();
+                ctx.restore();
+
+                if (rotation / 360 >= totalRotations) {
+                    clearInterval(spin);
+                    const angle = rotation % 360;
+                    const sliceAngle = 360 / remainingNames.length;
+                    const index = Math.floor((360 - angle) / sliceAngle) % remainingNames.length;
+                    currentName = remainingNames[index];
+                    remainingNames.splice(index, 1);
+
+                    setTimeout(() => alert(`You landed on: ${currentName}`), 200);
+                    if (remainingNames.length === 0) {
+                        spinButton.disabled = true;
+                        alert("No more names left!");
+                    }
+                }
+            }, 10);
+        }
+
+        spinButton.addEventListener('click', spinWheel);
+
+        drawWheel();
+    </script>
+</body>
+</html>
